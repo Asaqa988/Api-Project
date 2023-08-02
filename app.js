@@ -1,127 +1,132 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
+const bodyParser = require("body-parser");
+const fetch = require("node-fetch");
 
 const app = express();
 app.use(bodyParser.json());
 
-// In-memory data storage for books 
+// In-memory data storage for books
 let books = [
-  { id: 1, title: 'Book 1', author: 'Author 1' },
-  { id: 2, title: 'Book 2', author: 'Author 2' },
-  { id: 3, title: 'Book 3', author: 'Author 3' },
+  // Your existing book data
 ];
 
 // In-memory data storage for courses
 let courses = [
-  { id: 1, title: 'Course 1', author: 'Abedalraheem Alsaqqa' },
-  { id: 2, title: 'Course 2', author: 'Abedalraheem Alsaqqa' },
-  { id: 3, title: 'Course 3', author: 'Abedalraheem Alsaqqa' },
-  { id: 4, title: 'Quality Assurance Manual', author: 'Abedalraheem Alsaqqa' },
-  { id: 5, title: 'Web Development Fundamentals', author: 'Abedalraheem Alsaqqa' },
-  { id: 6, title: 'Python Programming Basics', author: 'Abedalraheem Alsaqqa' },
-  { id: 7, title: 'Introduction to Data Science', author: 'Abedalraheem Alsaqqa' },
-  { id: 8, title: 'JavaScript for Beginners', author: 'Abedalraheem Alsaqqa' },
-  { id: 9, title: 'Machine Learning Foundations', author: 'Abedalraheem Alsaqqa' },
-  { id: 10, title: 'Software Engineering Principles', author: 'Abedalraheem Alsaqqa' },
-  { id: 11, title: 'Graphic Design Fundamentals', author: 'Abedalraheem Alsaqqa' },
-  { id: 12, title: 'Data Structures and Algorithms', author: 'Abedalraheem Alsaqqa' },
-  { id: 13, title: 'Mobile App Development with React Native', author: 'Abedalraheem Alsaqqa' },
-  { id: 14, title: 'Introduction to Artificial Intelligence', author: 'Abedalraheem Alsaqqa' },
-  { id: 15, title: 'Ethical Hacking and Cybersecurity', author: 'Abedalraheem Alsaqqa' },
-  // Add more sample data as needed
+  // Your existing course data
 ];
 
-
 // GET all books
-app.get('/api/books', (req, res) => {
-  res.json(books);
-});
+// ...
 
 // GET a specific book by ID
-app.get('/api/books/:id', (req, res) => {
-  const bookId = parseInt(req.params.id);
-  const book = books.find((book) => book.id === bookId);
-
-  if (!book) {
-    res.status(404).json({ message: 'Book not found' });
-  } else {
-    res.json(book);
-  }
-});
+// ...
 
 // POST a new book
-app.post('/api/books', (req, res) => {
-  const newBook = req.body;
-  newBook.id = books.length + 1;
-  books.push(newBook);
-  res.status(201).json(newBook);
-});
+// ...
 
 // PUT (update) an existing book by ID
-app.put('/api/books/:id', (req, res) => {
-  const bookId = parseInt(req.params.id);
-  const updatedBook = req.body;
-  const index = books.findIndex((book) => book.id === bookId);
-
-  if (index === -1) {
-    res.status(404).json({ message: 'Book not found' });
-  } else {
-    books[index] = { ...books[index], ...updatedBook };
-    res.json(books[index]);
-  }
-});
+// ...
 
 // DELETE a book by ID
-app.delete('/api/books/:id', (req, res) => {
-  const bookId = parseInt(req.params.id);
-  books = books.filter((book) => book.id !== bookId);
-  res.json({ message: 'Book deleted successfully' });
-});
+// ...
 
-// GET all courses
-app.get('/api/courses', (req, res) => {
-  res.json(courses);
-});
-
-// GET a specific course by ID
-app.get('/api/courses/:id', (req, res) => {
-  const courseId = parseInt(req.params.id);
-  const course = courses.find((course) => course.id === courseId);
-
-  if (!course) {
-    res.status(404).json({ message: 'Course not found' });
-  } else {
-    res.json(course);
+// Proxy endpoint for fetching all courses from the external API
+app.get("/api/courses", async (req, res) => {
+  try {
+    const response = await fetch(
+      "https://pacific-bubbly-attic.glitch.me/api/courses"
+    );
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Something went wrong" });
   }
 });
 
-// POST a new course
-app.post('/api/courses', (req, res) => {
-  const newCourse = req.body;
-  newCourse.id = courses.length + 1;
-  courses.push(newCourse);
-  res.status(201).json(newCourse);
+// Proxy endpoint for fetching a specific course by ID from the external API
+app.get("/api/courses/:id", async (req, res) => {
+  const courseId = parseInt(req.params.id);
+  try {
+    const response = await fetch(
+      `https://pacific-bubbly-attic.glitch.me/api/courses/${courseId}`
+    );
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(404).json({ message: "Course not found" });
+  }
 });
 
-// PUT (update) an existing course by ID
-app.put('/api/courses/:id', (req, res) => {
+// Proxy endpoint for adding a new course to the external API
+app.post("/api/courses", async (req, res) => {
+  const newCourse = req.body;
+  try {
+    const response = await fetch(
+      "https://pacific-bubbly-attic.glitch.me/api/courses",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newCourse),
+      }
+    );
+    const data = await response.json();
+    courses.push(data);
+    res.status(201).json(data);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+});
+
+// Proxy endpoint for updating an existing course by ID in the external API
+app.put("/api/courses/:id", async (req, res) => {
   const courseId = parseInt(req.params.id);
   const updatedCourse = req.body;
-  const index = courses.findIndex((course) => course.id === courseId);
-
-  if (index === -1) {
-    res.status(404).json({ message: 'Course not found' });
-  } else {
-    courses[index] = { ...courses[index], ...updatedCourse };
-    res.json(courses[index]);
+  try {
+    const response = await fetch(
+      `https://pacific-bubbly-attic.glitch.me/api/courses/${courseId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedCourse),
+      }
+    );
+    const data = await response.json();
+    const index = courses.findIndex((course) => course.id === courseId);
+    if (index === -1) {
+      courses.push(data);
+    } else {
+      courses[index] = data;
+    }
+    res.json(data);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(404).json({ message: "Course not found" });
   }
 });
 
-// DELETE a course by ID
-app.delete('/api/courses/:id', (req, res) => {
+// Proxy endpoint for deleting a course by ID from the external API
+app.delete("/api/courses/:id", async (req, res) => {
   const courseId = parseInt(req.params.id);
-  courses = courses.filter((course) => course.id !== courseId);
-  res.json({ message: 'Course deleted successfully' });
+  try {
+    await fetch(
+      `https://pacific-bubbly-attic.glitch.me/api/courses/${courseId}`,
+      {
+        method: "DELETE",
+      }
+    );
+    courses = courses.filter((course) => course.id !== courseId);
+    res.json({ message: "Course deleted successfully" });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(404).json({ message: "Course not found" });
+  }
 });
 
 // Start the server
